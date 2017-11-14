@@ -1,5 +1,7 @@
 [Ansible](https://ansible.com) [Playbook](https://docs.ansible.com/ansible/latest/playbooks.html) to build Steve Bannon's [Tomboy NG](http://www.bannons.id.au/tomboy)/Pascal rewrite from source.
 
+[![Build Status](https://travis-ci.org/traumschule/tomboy.svg?branch=master)](https://travis-ci.org/traumschule/tomboy)
+
 # Dependencies
 
 * python-pip
