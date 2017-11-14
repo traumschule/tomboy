@@ -1,0 +1,9 @@
+*.retry
+cache
+lazconf
+Notes
+Source
+
+# libraries
+tkweb-*
+richmemo

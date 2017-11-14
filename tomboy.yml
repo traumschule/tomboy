@@ -1,0 +1,17 @@
+---
+# Ansible playbook to build Tomboy NG/Pascal with Lazarus
+
+- hosts: localhost
+  pre_tasks:
+    - stat: path=Source/Tomboy_NG
+      register: find_build
+      tags: build
+
+  roles:
+   - { role: tomboy, when: find_build is not defined or not find_build.stat.exists }
+
+  post_tasks:
+    - command: chdir=Source ./Tomboy_NG
+      tags: build
+
+...

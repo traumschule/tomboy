@@ -1,0 +1,135 @@
+---
+# Installs dependencies and builds Tomboy_NG/Lazarus
+
+- set_fact: dir={{ansible_env.PWD}}
+  tags: debug, source,  build, lib, kcontrols, memo
+
+- name: Current directory
+  debug: var=dir
+  tags: debug
+
+- debug: var=with_memo
+  when: with_memo is defined and with_memo
+  tags: debug
+
+
+# Install Tomboy next gen - http://www.bannons.id.au/tomboy
+- debug: var=ansible_architecture
+  tags: debug
+- debug: var=ansible_distribution
+  tags: debug
+- debug: var=ansible_distribution_release
+  tags: debug
+
+- name: Install system tools (tar, unzip)
+  become: yes
+  package: name={{item}} state=present
+  with_items: { tar, unzip }
+  tags:
+    - deps
+
+- name: Install Lazarus
+  become: yes
+  package: name=lazarus state=present
+  register: lazarus_pkg
+  ignore_errors: yes
+  tags: 
+    - deps
+    - lazarus
+
+- name: Install Lazarus from source
+  include_tasks: install_lazarus.yml
+  when: lazarus_pkg|failed
+  tags: 
+    - dependeny
+    - lazarus
+
+- name: Create directories
+  file: state=directory path={{item}}
+  with_items:
+    - "{{dir}}/cache"
+    - "{{dir}}/Source/lib"
+
+- name: Download source
+  uri: 
+    url: http://www.bannons.id.au/uploads/downloads/Source.zip
+    dest: "{{dir}}/cache/Source.zip"
+    status_code: 200,304
+  tags:
+    - source
+
+- name: Extract source
+  unarchive:
+    src: "{{dir}}/cache/Source.zip"
+    dest: "{{dir}}"
+  tags: source
+
+- stat: path={{dir}}/cache/KControls.zip
+  register: kcontrols
+  tags:
+    - lib
+    - kcontrols
+- name: Download KControls
+  uri: 
+    url: https://bitbucket.org/tkweb/kcontrols/get/e4ec3f5e4b06.zip
+    dest: "{{dir}}/cache/KControls.zip"
+    status_code: 200,304
+  when: not kcontrols.stat.exists  
+  tags:
+    - lib
+    - kcontrols
+
+- name: Extract KControls
+  unarchive: 
+    src: "{{dir}}/cache/KControls.zip"
+    dest: "{{dir}}/Source/lib"
+    creates: "{{dir}}/Source/lib/tkweb-kcontrols-e4ec3f5e4b06/README.md"
+    remote_src: yes
+  register: kcontrols
+  tags:
+    - lib
+    - kcontrols
+
+- name: Create secondory Lazarus config dir ./lazconf
+  file: state=directory path={{dir}}/lazconf
+- name: Create ./lazconf/packagefiles.xml with links to KControls
+  template: src={{dir}}/template/packagefiles.xml dest={{dir}}/lazconf/ backup=yes
+  tags:
+    - lib
+    - kcontrols
+
+- name: Enable RichMemo
+  #when: with_memo is defined and with_memo
+  include_tasks: memo.yml
+  tags:
+    - lib
+    - memo
+
+- name: Disable RichMemo # do not disable as long as richmemo is a dependency
+  when: 0 #with_memo is undefined or not with_memo
+  replace:
+    regexp: (\s*)RicMmemoUtils
+    replace: \1//RichMemoUtils
+    path: "{{dir}}/Source/{{item}}.pas"
+  with_items: { editbox, loadnote }
+  tags:
+    - memo
+
+- name: Build Tomboy/Pascal
+  command: chdir={{dir}}/Source lazbuild --pcp=../lazconf Tomboy_NG.lpi
+  register: build
+  ignore_errors: yes
+  tags:
+    - build
+- debug:
+    var: build.stdout_lines
+  when: build.rc != 0
+  tags:
+    - build
+
+- fail: msg="Tomboy could not be build."
+  when: build.rc != 0
+  tags:
+    - build
+
+...

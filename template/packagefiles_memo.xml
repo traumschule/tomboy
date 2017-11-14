@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <UserPkgLinks Version="3" Count="3">
+    <Item1>
+      <Name Value="kcontrolsbase"/>
+      <Version Major="1" Minor="7" Release="1"/>
+      <Filename Value="{{dir}}/Source/lib/tkweb-kcontrols-e4ec3f5e4b06/packages/kcontrols/kcontrolsbase.lpk"/>
+    </Item1>
+    <Item2>
+      <Name Value="KControlsLaz"/>
+      <Version Major="1" Minor="7" Release="1"/>
+      <Filename Value="{{dir}}/Source/lib/tkweb-kcontrols-e4ec3f5e4b06/packages/kcontrols/kcontrolslaz.lpk"/>
+    </Item2>
+    <Item3>
+      <Name Value="richmemopackage"/>
+      <Version Major="1"/>
+      <Filename Value="{{dir}}/Source/lib/richmemo/richmemopackage.lpk"/>
+    </Item3>
+  </UserPkgLinks>
+</CONFIG>
