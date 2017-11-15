@@ -10,6 +10,6 @@
   become: yes
   apt: deb={{item}} state=present
   with_items: # 1.8ORC5
-#   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc-src_3.0.4-rc1_i386.deb"
+#   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc-src_3.0.4-rc1_i386.deb"
    - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc_3.0.4-rc1_i386.deb"
-   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/lazarus-project_1.8.0RC5-0_i386.deb"
+   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/lazarus-project_1.8.0RC5-0_i386.deb"

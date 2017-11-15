@@ -12,6 +12,7 @@
 
   post_tasks:
     - command: chdir=Source ./Tomboy_NG
+      when: not 'travis' in dir
       tags: build
 
 ...
