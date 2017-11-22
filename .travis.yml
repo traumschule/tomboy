@@ -24,7 +24,7 @@ install:
   - pip install ansible
 
 before_script:
-  - export ansible_command='cd /travis && ansible-playbook tomboy.yml'
+  - export ansible_command='ansible-playbook tomboy.yml'
 
 script:
   - $ansible_command --syntax-check
