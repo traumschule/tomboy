@@ -1,16 +1,12 @@
 ---
 # Install Lazarus
 
-- name: Install system tools
+- name: Install dependencies
   become: yes
   package: name={{item}} state=present
-  with_items: { git, tar, unzip }
+  with_items: { git, tar, unzip, libgtk2.0-dev }
   tags:
     - deps
-
-- name: Install GTK2
-  become: yes
-  package: name=libgtk2.0-dev state=present
 
 - name: Install Lazarus
   when: ansible_distribution == 'Debian' and ansible_distribution_release == 'NA' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'artful'
