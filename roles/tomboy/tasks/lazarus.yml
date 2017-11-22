@@ -1,15 +1,33 @@
 ---
 # Install Lazarus
 
+- name: Install system tools (tar, unzip)
+  become: yes
+  package: name={{item}} state=present
+  with_items: { tar, unzip }
+  tags:
+    - deps
+
 - name: Install GTK2
   become: yes
   package: name=libgtk2.0-dev state=present
 
-# https://sourceforge.net/projects/lazarus/files/?source=navbar
-- name: Install Lazarus
+- name: Download upstream Lazarus deb packages (~100mb)
+  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
+  with_items:
+   - { file: "fpc_3.0.4-rc1_{{ ansible_architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc_3.0.4-rc1_{{ ansible_architecture }}.deb" }
+   - { file: "fpc-src_3.0.4-rc1_{{ ansible_architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc-src_3.0.4-rc1_{{ ansible_architecture }}.deb" }
+   - { file: "lazarus-project_1.8.0RC5-0_{{ ansible_architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/lazarus-project_1.8.0RC5-0_{{ ansible_architecture }}.deb" }
+  # TODO install on
+  # Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/
+  # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
+  # Win32 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/
+  # Win64 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/
+
+- name: Install Lazarus deb
   become: yes
-  apt: deb={{item}} state=present
+  apt: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
   with_items: # 1.8ORC5
-#   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc-src_3.0.4-rc1_i386.deb"
-   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/fpc_3.0.4-rc1_i386.deb"
-   - "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ ansible_architecture }}%20DEB/Lazarus%201.8.0RC5/lazarus-project_1.8.0RC5-0_i386.deb"
+   - "cache/fpc_3.0.4-rc1_{{ ansible_architecture }}.deb"
+   - "cache/fpc-src_3.0.4-rc1_{{ ansible_architecture }}.deb"
+   - "cache/lazarus-project_1.8.0RC5-0_{{ ansible_architecture }}.deb"

@@ -1,9 +1,6 @@
 *.retry
 cache
 lazconf
+lib
+src
 Notes
-Source
-
-# libraries
-tkweb-*
-richmemo

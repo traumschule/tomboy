@@ -1,19 +1,6 @@
 ---
-# Installs dependencies and builds Tomboy_NG/Lazarus
+# Install and build tomboy-ng - http://www.bannons.id.au/tomboy
 
-- set_fact: dir={{ansible_env.PWD}}
-  tags: debug, source,  build, lib, kcontrols, memo
-
-- name: Current directory
-  debug: var=dir
-  tags: debug
-
-- debug: var=with_memo
-  when: with_memo is defined and with_memo
-  tags: debug
-
-
-# Install Tomboy next gen - http://www.bannons.id.au/tomboy
 - debug: var=ansible_architecture
   tags: debug
 - debug: var=ansible_distribution
@@ -21,107 +8,66 @@
 - debug: var=ansible_distribution_release
   tags: debug
 
-- name: Install system tools (tar, unzip)
-  become: yes
-  package: name={{item}} state=present
-  with_items: { tar, unzip }
-  tags:
-    - deps
+- name: Save current directory
+  set_fact: dir={{ansible_env.PWD}}/src
+  tags: debug, source,  build, lib, kcontrols
+- name: tomboy-ng directory
+  debug: var=dir
+  tags: debug
 
-- name: Install Lazarus
-  become: yes
-  package: name=lazarus state=present
-  register: lazarus_pkg
-  ignore_errors: yes
-  tags: 
-    - deps
-    - lazarus
+- name: Check for tomboy-ng source
+  stat: path={{ dir }}
+  register: repo
+- name: Clone tomboy-ng repository
+  when: not repo.stat.exists
+  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng   
 
-- name: Install Lazarus from source
+- name: Check for lazbuild
+  stat: path=/usr/bin/lazbuild
+  register: lazarus_bin
+- name: Install Lazarus deps
+  when: not lazarus_bin.stat.exists
   include_tasks: lazarus.yml
-  when: lazarus_pkg is undefined or lazarus_pkg|failed
-  tags: 
-    - deps
-    - lazarus
-    - lazarus_upstream
+  tags: [ deps, lazarus ]
 
 - name: Create directories
   file: state=directory path={{item}}
-  with_items:
-    - "{{dir}}/cache"
-    - "{{dir}}/Source/lib"
+  with_items: [ cache, lib ]
 
-- name: Download source
-  uri: 
-    url: http://www.bannons.id.au/uploads/downloads/Source.zip
-    dest: "{{dir}}/cache/Source.zip"
+- name: Create secondary Lazarus config dir ./lazconf
+  file: state=directory path=lazconf
+- name: Create ./lazconf/packagefiles.xml with links to KControls
+  template: src=template/packagefiles.xml dest=lazconf/ backup=yes
+  tags: [ lib, kcontrols ]
+
+- name: Download KControls # http://www.tkweb.eu/en/delphicomp/kcontrols.html
+  uri: # https://bitbucket.org/tkweb/kcontrols/downloads/
+    url: https://bitbucket.org/tkweb/kcontrols/get/tip.zip
+    dest: cache/KControls.zip
+    creates: cache/KControls.zip
     status_code: 200,304
-  tags:
-    - source
-
-- name: Extract source
-  unarchive:
-    src: "{{dir}}/cache/Source.zip"
-    dest: "{{dir}}"
-  tags: source
-
-- stat: path={{dir}}/cache/KControls.zip
-  register: kcontrols
-  tags:
-    - lib
-    - kcontrols
-- name: Download KControls
-  uri: 
-    url: https://bitbucket.org/tkweb/kcontrols/get/e4ec3f5e4b06.zip
-    dest: "{{dir}}/cache/KControls.zip"
-    status_code: 200,304
-  when: not kcontrols.stat.exists  
-  tags:
-    - lib
-    - kcontrols
+  tags: [ lib, kcontrols ]
 
 - name: Extract KControls
   unarchive: 
-    src: "{{dir}}/cache/KControls.zip"
-    dest: "{{dir}}/Source/lib"
-    creates: "{{dir}}/Source/lib/tkweb-kcontrols-e4ec3f5e4b06/README.md"
+    src: cache/KControls.zip
+    dest: lib
+    creates: lib/tkweb-kcontrols-e4ec3f5e4b06/README.md
     remote_src: yes
   register: kcontrols
-  tags:
-    - lib
-    - kcontrols
+  tags: [ lib, kcontrols ]
 
-- name: Create secondory Lazarus config dir ./lazconf
-  file: state=directory path={{dir}}/lazconf
-- name: Create ./lazconf/packagefiles.xml with links to KControls
-  template: src={{dir}}/template/packagefiles.xml dest={{dir}}/lazconf/ backup=yes
-  tags:
-    - lib
-    - kcontrols
+- name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
+  patch: dest={{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas remote_src=yes src=template/kgrids.patch backup=yes
+  # To avoid:
+  #   Error: (3058) There is no method in an ancestor class to be overridden:
+  #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
 
-- name: Enable RichMemo
-  #when: with_memo is defined and with_memo
-  include_tasks: memo.yml
-  tags:
-    - lib
-    - memo
-
-- name: Disable RichMemo # do not disable as long as richmemo is a dependency
-  when: 0 #with_memo is undefined or not with_memo
-  replace:
-    regexp: (\s*)RicMmemoUtils
-    replace: \1//RichMemoUtils
-    path: "{{dir}}/Source/{{item}}.pas"
-  with_items: { editbox, loadnote }
-  tags:
-    - memo
-
-- name: Build Tomboy/Pascal
-  command: chdir={{dir}}/Source lazbuild --pcp=../lazconf Tomboy_NG.lpi
+- name: Build Tomboy/Pascal # cross-compiling http://wiki.freepascal.org/fpcupdeluxe
+  command: chdir={{dir}}/tomboy-ng lazbuild --pcp=../../lazconf Tomboy_NG.lpi
   register: build
   ignore_errors: yes
-  tags:
-    - build
+  tags: build
 - debug:
     var: build.stdout_lines
   when: build.rc != 0

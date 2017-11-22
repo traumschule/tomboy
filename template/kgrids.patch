@@ -1,0 +1,14 @@
+2945,2946c2945,2946
+<     procedure DoAutoAdjustLayout(const AMode: TLayoutAdjustmentPolicy;
+<       const AXProportion, AYProportion: Double; const AScale0Fonts: Boolean); override;
+---
+>     {procedure DoAutoAdjustLayout(const AMode: TLayoutAdjustmentPolicy;
+>       const AXProportion, AYProportion: Double; const AScale0Fonts: Boolean); override;}
+7543c7543
+< procedure TKCustomGrid.DoAutoAdjustLayout(const AMode: TLayoutAdjustmentPolicy;
+---
+> {procedure TKCustomGrid.DoAutoAdjustLayout(const AMode: TLayoutAdjustmentPolicy;
+7572c7572
+< end;
+---
+> end;}

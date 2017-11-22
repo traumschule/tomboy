@@ -3,7 +3,8 @@
 
 - hosts: localhost
   pre_tasks:
-    - stat: path=Source/Tomboy_NG
+    - name: Check for Tomboy_NG binary
+      stat: path=src/tomboy-ng/Tomboy_NG
       register: find_build
       tags: build
 
@@ -11,7 +12,8 @@
    - { role: tomboy, when: find_build is not defined or not find_build.stat.exists }
 
   post_tasks:
-    - command: chdir=Source ./Tomboy_NG
+    - name: Start src/tomboy-ng/tomboy-ng
+      command: chdir=src/tomboy-ng ./tomboy-ng
       when: not 'travis' in dir
       tags: build
 
