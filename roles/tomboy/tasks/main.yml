@@ -54,10 +54,18 @@
   unarchive: 
     src: cache/KControls.zip
     dest: "{{dir}}/../lib"
-    creates: "{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/README.md"
+    creates: "{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas"
     remote_src: yes
   register: kcontrols
   tags: [ lib, kcontrols ]
+
+- shell: "ls -la {{dir}}/../lib"
+  register: libs
+- debug: var=libs.stdout_lines
+
+- stat: path="{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas"
+  register: kcontrols_installed
+- debug: var=kcontrols_installed.stat.exists
 
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
   patch: dest="{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes

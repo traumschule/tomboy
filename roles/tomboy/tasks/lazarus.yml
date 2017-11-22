@@ -13,10 +13,10 @@
   package: name=libgtk2.0-dev state=present
 
 - name: Install Lazarus
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'buster' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'artful'
   become: yes
   package: name=lazarus state=present
   register: lazarus_installation
-  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'testing' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'rolling'
   tags: [ deps, lazarus ]
 
 - name: Download upstream Lazarus deb packages (~100mb)
