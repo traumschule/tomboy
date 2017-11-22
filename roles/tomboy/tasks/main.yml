@@ -8,6 +8,8 @@
 - debug: var=ansible_distribution_release
   tags: debug
 - set_fact:
+    distribution: "{{ ansible_distribution if not ansible_distribution == 'Debian' and not ansible_distribution == 'Ubuntu' else 'linux' }}"
+- set_fact:
     architecture: "{{ ansible_architecture if not ansible_architecture == 'x86_64' else 'amd64' }}"
 
 - name: Save current directory
@@ -22,7 +24,7 @@
   with_items: [ cache, lib ]
 
 - name: Install Lazarus deps
-  include_tasks: lazarus.yml
+  include_tasks: lazarus_{{distribution}}.yml
   tags: [ deps, lazarus ]
 
 - name: Clone tomboy-ng repository

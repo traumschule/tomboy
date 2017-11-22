@@ -11,8 +11,8 @@ matrix:
 before_install: # thanks https://github.com/andyli
   # https://github.com/travis-ci/travis-ci/issues/3448#issuecomment-250075501
   - |
-    sw_vers
-    brew update || brew update
+    #sw_vers
+    #brew update || brew update
     brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python3
     curl -O https://bootstrap.pypa.io/get-pip.py # 1.5mb
     python get-pip.py --user
