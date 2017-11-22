@@ -1,30 +1,20 @@
 ---
 # syntax check: https://lint.travis-ci.org/
-
-# Based on:
-#  - https://www.jeffgeerling.com/blog/testing-ansible-roles-travis-ci-github
-#  - http://romanvm.pythonanywhere.com/post/using-docker-travis-continuous-integration-25/
-#  - https://www.jeffgeerling.com/blog/2016/how-i-test-ansible-configuration-on-7-different-oses-docker
-#  - https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-#  - https://bertvv.github.io/notes-to-self/2015/12/13/testing-ansible-roles-with-travis-ci-part-2-multi-platform-tests/
-
-language: python
-#cache: pip
-#python: "2.7"
-#git:
-#  depth: 3
-
-os: # https://docs.travis-ci.com/user/multi-os/
-#  - linux
-  - osx # https://docs.travis-ci.com/user/reference/osx
-
+language: c
+os: osx # https://docs.travis-ci.com/user/reference/osx
 matrix:
   include:
-#    - os: linux
-#      dist: trusty
-#      sudo: required
-    - os: osx
-      osx_image: xcode7.3
+    - os: osx # https://travis-ci.org/MacPython
+      # thanks https://github.com/WhyNotHugo
+      # https://github.com/travis-ci/travis-ci/issues/2312#issuecomment-289140791
+
+before_install: # thanks https://github.com/andyli
+  # https://github.com/travis-ci/travis-ci/issues/3448#issuecomment-250075501
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      ./bin/osx_install_pip.sh
+    else if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
+      sudo apt-get update && sudo apt-get -y install python-pip
+    fi; fi
 
 install:
   - pip install --upgrade pip
