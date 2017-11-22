@@ -7,6 +7,8 @@
   tags: debug
 - debug: var=ansible_distribution_release
   tags: debug
+- set_fact:
+    architecture: "{{ ansible_architecture if not ansible_architecture == 'x86_64' else 'amd64' }}"
 
 - name: Save current directory
   set_fact: dir={{ansible_env.PWD}}/src
@@ -15,12 +17,9 @@
   debug: var=dir
   tags: debug
 
-- name: Check for tomboy-ng source
-  stat: path={{ dir }}
-  register: repo
-- name: Clone tomboy-ng repository
-  when: not repo.stat.exists
-  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng   
+- name: Create directories
+  file: state=directory path={{item}}
+  with_items: [ cache, lib ]
 
 - name: Check for lazbuild
   stat: path=/usr/bin/lazbuild
@@ -30,9 +29,12 @@
   include_tasks: lazarus.yml
   tags: [ deps, lazarus ]
 
-- name: Create directories
-  file: state=directory path={{item}}
-  with_items: [ cache, lib ]
+- name: Check for tomboy-ng source
+  stat: path={{ dir }}
+  register: repo
+- name: Clone tomboy-ng repository
+  when: not repo.stat.exists
+  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng  
 
 - name: Create secondary Lazarus config dir ./lazconf
   file: state=directory path=lazconf
@@ -51,14 +53,21 @@
 - name: Extract KControls
   unarchive: 
     src: cache/KControls.zip
-    dest: lib
-    creates: lib/tkweb-kcontrols-e4ec3f5e4b06/README.md
+    dest: "{{dir}}/../lib"
+    creates: "{{dir}}/../lib/tkweb-kcontrols-*"
     remote_src: yes
   register: kcontrols
   tags: [ lib, kcontrols ]
 
+- name: Find KControls
+  find: file_type=directory paths="{{dir}}/../lib" patterns='tkweb-kcontrols-*'
+  register: kcontrols_dir
+
+- name: Link KControls
+  file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/../lib/tkweb-kcontrols"
+
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest={{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest="{{dir}}/../lib/tkweb-kcontrols/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
@@ -71,12 +80,10 @@
 - debug:
     var: build.stdout_lines
   when: build.rc != 0
-  tags:
-    - build
+  tags: build
 
 - fail: msg="Tomboy could not be built."
   when: build.rc != 0
-  tags:
-    - build
+  tags: build
 
 ...
