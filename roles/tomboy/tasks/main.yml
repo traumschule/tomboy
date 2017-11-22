@@ -21,13 +21,6 @@
   file: state=directory path={{item}}
   with_items: [ cache, lib ]
 
-- name: Install Lazarus
-  become: yes
-  package: name=lazarus state=present
-  register: lazarus_pkg
-  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'testing' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'rolling'
-  tags: [ deps, lazarus ]
-
 - name: Check for lazbuild
   stat: path=/usr/bin/lazbuild
   register: lazarus_bin
@@ -60,14 +53,14 @@
 - name: Extract KControls
   unarchive: 
     src: cache/KControls.zip
-    dest: lib
-    creates: lib/tkweb-kcontrols-e4ec3f5e4b06/README.md
+    dest: "{{dir}}/../lib"
+    creates: "{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/README.md"
     remote_src: yes
   register: kcontrols
   tags: [ lib, kcontrols ]
 
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest={{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest="{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
@@ -80,12 +73,10 @@
 - debug:
     var: build.stdout_lines
   when: build.rc != 0
-  tags:
-    - build
+  tags: build
 
 - fail: msg="Tomboy could not be built."
   when: build.rc != 0
-  tags:
-    - build
+  tags: build
 
 ...
