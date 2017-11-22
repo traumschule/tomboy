@@ -15,12 +15,12 @@
   debug: var=dir
   tags: debug
 
-- name: Check for tomboy-ng source
-  stat: path={{ dir }}
-  register: repo
-- name: Clone tomboy-ng repository
-  when: not repo.stat.exists
-  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng   
+- name: Install Lazarus
+  become: yes
+  package: name=lazarus state=present
+  register: lazarus_pkg
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'testing' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'rolling'
+  tags: [ deps, lazarus ]
 
 - name: Check for lazbuild
   stat: path=/usr/bin/lazbuild
@@ -29,6 +29,13 @@
   when: not lazarus_bin.stat.exists
   include_tasks: lazarus.yml
   tags: [ deps, lazarus ]
+
+- name: Check for tomboy-ng source
+  stat: path={{ dir }}
+  register: repo
+- name: Clone tomboy-ng repository
+  when: not repo.stat.exists
+  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng  
 
 - name: Create directories
   file: state=directory path={{item}}
