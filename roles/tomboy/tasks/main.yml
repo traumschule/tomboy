@@ -15,6 +15,10 @@
   debug: var=dir
   tags: debug
 
+- name: Create directories
+  file: state=directory path={{item}}
+  with_items: [ cache, lib ]
+
 - name: Install Lazarus
   become: yes
   package: name=lazarus state=present
@@ -36,10 +40,6 @@
 - name: Clone tomboy-ng repository
   when: not repo.stat.exists
   git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng  
-
-- name: Create directories
-  file: state=directory path={{item}}
-  with_items: [ cache, lib ]
 
 - name: Create secondary Lazarus config dir ./lazconf
   file: state=directory path=lazconf
