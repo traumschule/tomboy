@@ -8,7 +8,7 @@
 - debug: var=ansible_distribution_release
   tags: debug
 - set_fact:
-    architecture: "{{ ansible_architecture if not ansible_architecture == 'x86_64' else amd64 }}"
+    architecture: "{{ ansible_architecture if not ansible_architecture == 'x86_64' else 'amd64' }}"
 
 - name: Save current directory
   set_fact: dir={{ansible_env.PWD}}/src
