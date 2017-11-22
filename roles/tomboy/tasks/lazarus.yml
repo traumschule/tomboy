@@ -13,14 +13,17 @@
   package: name=libgtk2.0-dev state=present
 
 - name: Install Lazarus
-  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'buster' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'artful'
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'NA' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'artful'
   become: yes
   package: name=lazarus state=present
-  register: lazarus_installation
   tags: [ deps, lazarus ]
 
+- name: Check for lazbuild
+  stat: path=/usr/bin/lazbuild
+  register: lazbuild_bin
+
 - name: Download upstream Lazarus deb packages (~100mb)
-  when: not lazarus_installation|succeeded
+  when: not lazbuild_bin.stat.exists
   uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
   with_items:
    - { file: "fpc_3.0.4-rc1_{{ architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ architecture }}%20DEB/Lazarus%201.8.0RC5/fpc_3.0.4-rc1_{{ architecture }}.deb" }
@@ -33,7 +36,7 @@
   # Win64 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/
 
 - name: Install Lazarus deb
-  when: not lazarus_installation|succeeded
+  when: not lazbuild_bin.stat.exists
   become: yes
   apt: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
   with_items: # 1.8ORC5

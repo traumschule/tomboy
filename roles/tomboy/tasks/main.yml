@@ -54,21 +54,20 @@
   unarchive: 
     src: cache/KControls.zip
     dest: "{{dir}}/../lib"
-    creates: "{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas"
+    creates: "{{dir}}/../lib/tkweb-kcontrols-*"
     remote_src: yes
   register: kcontrols
   tags: [ lib, kcontrols ]
 
-- shell: "ls -la {{dir}}/../lib"
-  register: libs
-- debug: var=libs.stdout_lines
+- name: Find KControls
+  find: file_type=directory paths="{{dir}}/../lib" patterns='tkweb-kcontrols-*'
+  register: kcontrols_dir
 
-- stat: path="{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas"
-  register: kcontrols_installed
-- debug: var=kcontrols_installed.stat.exists
+- name: Link KControls
+  file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/../lib/tkweb-kcontrols"
 
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest="{{dir}}/../lib/tkweb-kcontrols-e4ec3f5e4b06/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest="{{dir}}/../lib/tkweb-kcontrols/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
