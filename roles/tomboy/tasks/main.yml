@@ -21,19 +21,11 @@
   file: state=directory path={{item}}
   with_items: [ cache, lib ]
 
-- name: Check for lazbuild
-  stat: path=/usr/bin/lazbuild
-  register: lazarus_bin
 - name: Install Lazarus deps
-  when: not lazarus_bin.stat.exists
   include_tasks: lazarus.yml
   tags: [ deps, lazarus ]
 
-- name: Check for tomboy-ng source
-  stat: path={{ dir }}
-  register: repo
 - name: Clone tomboy-ng repository
-  when: not repo.stat.exists
   git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng  
 
 - name: Create secondary Lazarus config dir ./lazconf

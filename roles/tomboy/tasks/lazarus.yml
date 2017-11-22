@@ -8,36 +8,45 @@
   tags:
     - deps
 
-- name: Install Lazarus
-  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'NA' or ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'artful'
-  become: yes
-  package: name=lazarus state=present
-  tags: [ deps, lazarus ]
-
-- name: Check for lazbuild
-  stat: path=/usr/bin/lazbuild
-  register: lazbuild_bin
-
 - name: Download upstream Lazarus deb packages (~100mb)
-  when: not lazbuild_bin.stat.exists
+  when: ansible_distribution == 'Ubuntu'
   uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
   with_items:
    - { file: "fpc_3.0.4-rc1_{{ architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ architecture }}%20DEB/Lazarus%201.8.0RC5/fpc_3.0.4-rc1_{{ architecture }}.deb" }
    - { file: "fpc-src_3.0.4-rc1_{{ architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ architecture }}%20DEB/Lazarus%201.8.0RC5/fpc-src_3.0.4-rc1_{{ architecture }}.deb" }
    - { file: "lazarus-project_1.8.0RC5-0_{{ architecture }}.deb", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Linux%20{{ architecture }}%20DEB/Lazarus%201.8.0RC5/lazarus-project_1.8.0RC5-0_{{ architecture }}.deb" }
-  # TODO install on
-  # Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/
-  # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
-  # Win32 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/
-  # Win64 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/
+  register: ubuntu
 
-- name: Install Lazarus deb
-  when: not lazbuild_bin.stat.exists
+- name: Install Lazarus package
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   apt: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
   with_items: # 1.8ORC5
    - "cache/fpc_3.0.4-rc1_{{ architecture }}.deb"
    - "cache/fpc-src_3.0.4-rc1_{{ architecture }}.deb"
    - "cache/lazarus-project_1.8.0RC5-0_{{ architecture }}.deb"
+
+- name: Download upstream Lazarus OSX packages (~150mb)
+  when: ubuntu|skipped
+  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
+  with_items:
+   - { file: "lazarus-1.2.6-powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/lazarus-1.2.6-powerpc-macosx.dmg" }
+   - { file: "fpc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg" }
+   - { file: "fpcsrc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg" }
+
+  # TODO install on
+  # Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/
+  # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
+  # Win32 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/
+  # Win64 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/
+
+- name: Install Lazarus package
+  when: ubuntu|skipped
+  become: yes
+  package: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
+  with_items:
+   - "cache/fpc-2.6.4.powerpc-macosx.dmg"
+   - "cache/fpcsrc-2.6.4.powerpc-macosx.dmg"
+   - "cache/lazarus-1.2.6-powerpc-macosx.dmg"
 
 ...

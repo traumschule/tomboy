@@ -14,51 +14,31 @@ python: "2.7"
 git:
   depth: 3
 
-sudo: required
-# https://docs.travis-ci.com/user/multi-os/
-#os:
-# - linux
-# - osx
-
-env:
-  # Stable
-  - os=ubuntu version=latest container_id=$(mktemp)
-  - os=debian version=latest container_id=$(mktemp)
-  # Testing
-  - os=ubuntu version=rolling container_id=$(mktemp)
-  - os=debian version=testing container_id=$(mktemp)
-  # Ubuntu: https://hub.docker.com/_/ubuntu/ - https://launchpad.net/ubuntu
-  # Debian: https://hub.docker.com/_/debian/ - https://www.debian.org/releases/
+os: # https://docs.travis-ci.com/user/multi-os/
+  - linux
+  - osx # https://docs.travis-ci.com/user/reference/osx
 
 matrix:
-  fast_finish: true
-  allow_failures:
-    - env: os=debian
-    - env: version=testing
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+    - os: osx
+      osx_image: xcode7.3
 
 before_install:
   - docker pull ${os}:${version}
   - docker run -d --name "$(cat ${container_id})" -v $(pwd):/travis ${os}:${version} tail -f /dev/null > "${container_id}"
 
 install:
-  - > # prepare ansible
-    docker exec "$(cat ${container_id})" bash -c 'apt-get update -qq &&
-      apt-get install -qqy python-pip &&
-      pip install --upgrade pip &&
-      pip install ansible'
+  - pip install --upgrade pip
+  - pip install ansible
 
 before_script:
   - export ansible_command='cd /travis && ansible-playbook tomboy.yml'
 
 script:
-  - |
-    if [ $TRAVIS_OS_NAME == 'osx' ] ; then
-      $ansible_command --syntax-check
-      $ansible_command
-    else
-      docker exec "$(cat ${container_id})" env ANSIBLE_FORCE_COLOR=1 bash -c "$ansible_command --syntax-check && $ansible_command"
-    fi
+  - $ansible_command --syntax-check
+  - $ansible_command
 
-after_script:
-  - docker stop "$(cat ${container_id})"
-
+...
