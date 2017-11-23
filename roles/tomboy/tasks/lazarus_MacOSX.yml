@@ -1,7 +1,7 @@
 ---
 
-- name: Unshallow homebrew # https://brew.sh/
-  shell: git -C "$(brew --repo homebrew/core)" fetch --unshallow
+#- name: Unshallow homebrew # https://brew.sh/
+#  shell: git -C "$(brew --repo homebrew/core)" fetch --unshallow
 
 - name: Install dependencies
   homebrew: name=gtk+ state=present update_homebrew=yes
@@ -10,23 +10,56 @@
   tags: deps
 
 # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
-- name: Download upstream Lazarus OSX packages (~150mb)
+- name: Download upstream Lazarus powerpc packages (~150mb)
+  when: ansible_architecture == 'x86_64'
   uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
   with_items:
    - { file: "lazarus-1.2.6-powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/lazarus-1.2.6-powerpc-macosx.dmg" }
    - { file: "fpc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg" }
    - { file: "fpcsrc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg" }
 
-# Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
-#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/lazarus-1.8.0-RC5-i686-macosx.dmg
-#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-3.0.2.intel-macosx.dmg
-#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-src-3.0.2-macosx.dmg
+- name: Install Lazarus powerpc
+  when: ansible_architecture == 'x86_64'
+  shell: | # example: http://blog.smalleycreative.com/administration/automating-osx-part-one/
+    export mountpath=/Volumes/{{item.path}}
+    # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
+    hdiutil mount -nobrowse {{item.file}}
+    hdiutil info
+    ls /Volumes
+    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
+    hdiutil unmount "$mountpath"
+  with_packages:
+    - { path: pfc, file: fpc-2.6.4.powerpc-macosx.dmg }
+    - { path: fpcsrc, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
+    - { path: lazarus, file: lazarus-1.2.6-powerpc-macosx.dmg }
+  register: hdiutil
+- debug: var=hdiutil.stdout_lines
 
-- name: Install Lazarus package
-  package: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
+
+# Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
+- name: Download upstream Lazarus i386 packages (~150mb)
+  when: not ansible_architecture == 'x86_64'
+  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
   with_items:
-   - "cache/fpc-2.6.4.powerpc-macosx.dmg"
-   - "cache/fpcsrc-2.6.4.powerpc-macosx.dmg"
-   - "cache/lazarus-1.2.6-powerpc-macosx.dmg"
+   - { file: "fpc-src-3.0.2-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-src-3.0.2-macosx.dmg" }
+   - { file: "fpc-3.0.2.intel-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-3.0.2.intel-macosx.dmg" }
+   - { file: "lazarus-1.8.0-RC5-i686-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/lazarus-1.8.0-RC5-i686-macosx.dmg" }
+
+- name: Install Lazarus i386
+  when: not ansible_architecture == 'x86_64'
+  shell: | # example: http://blog.smalleycreative.com/administration/automating-osx-part-one/
+    export mountpath=/Volumes/{{item.path}}
+    # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
+    hdiutil mount -nobrowse {{item.file}}
+    hdiutil info
+    ls /Volumes
+    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
+    hdiutil unmount "$mountpath"
+  with_packages:
+    - { path: pfc, file: fpc-2.6.4.powerpc-macosx.dmg }
+    - { path: fpcsrc, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
+    - { path: lazarus, file: lazarus-1.2.6-powerpc-macosx.dmg }
+  register: hdiutil
+- debug: var=hdiutil.stdout_lines
 
 ...
