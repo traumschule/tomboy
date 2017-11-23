@@ -1,6 +1,8 @@
 ---
 # Install and build tomboy-ng - http://www.bannons.id.au/tomboy
 
+- debug: var=ansible_user
+  tags: debug
 - debug: var=ansible_architecture
   tags: debug
 - debug: var=ansible_distribution
@@ -24,6 +26,7 @@
   with_items: [ cache, lib ]
 
 - name: Install Lazarus deps
+  remote_user: "{{ ansible_user }}"
   include_tasks: lazarus_{{distribution}}.yml
   tags: [ deps, lazarus ]
 
