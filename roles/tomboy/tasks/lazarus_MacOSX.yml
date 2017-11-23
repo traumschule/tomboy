@@ -1,11 +1,12 @@
 ---
 
-- name: Unshallow homebrew
+- name: Unshallow homebrew # https://brew.sh/
   shell: git -C "$(brew --repo homebrew/core)" fetch --unshallow
 
 - name: Install dependencies
-  homebrew: name={{item}} state=present update_homebrew=yes
-  with_items: { git, tar, unzip, libgtk2.0-dev }
+  homebrew: name=gtk+ state=present update_homebrew=yes
+#  homebrew: name={{item}} state=present update_homebrew=yes
+#  with_items: { git, tar, unzip, libgtk2.0-dev }
   tags: deps
 
 # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
