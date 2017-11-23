@@ -1,10 +1,10 @@
 ---
-
 - name: Install dependencies
   homebrew: name={{item}} state=present update_homebrew=yes
   with_items: { git, tar, unzip, libgtk2.0-dev }
   tags: deps
 
+# Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
 - name: Download upstream Lazarus OSX packages (~150mb)
   uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
   with_items:
@@ -12,21 +12,10 @@
    - { file: "fpc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg" }
    - { file: "fpcsrc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg" }
 
-# https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/lazarus-1.2.6-powerpc-macosx.dmg/download
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg/download
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg/download
-
-# https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/lazarus-1.8.0-RC5-i686-macosx.dmg/download
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-3.0.2.intel-macosx.dmg/download
-https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-src-3.0.2-macosx.dmg/download
-
-  # TODO install on
-  # Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/
-  # Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
-  # Win32 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/
-  # Win64 https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/
+# Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
+#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/lazarus-1.8.0-RC5-i686-macosx.dmg
+#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-3.0.2.intel-macosx.dmg
+#https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-src-3.0.2-macosx.dmg
 
 - name: Install Lazarus package
   package: deb={{item}} state=present force=yes # we need to force as fpc and fpc_src are conflicting
