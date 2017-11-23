@@ -4,11 +4,12 @@ set -e
 sw_vers
 
 # update package manager
-  #brew update || brew update
-
+brew update || brew update
 
 # Install python
-  brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python3
+brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python3
+
+  # alternative python install methods
   # thanks ogrisel https://github.com/travis-ci/travis-ci/issues/2312#issuecomment-43328069
   # http://blog.smalleycreative.com/administration/automating-osx-part-one/
   # https://github.com/matthew-brett/multibuild
@@ -26,8 +27,8 @@ sw_vers
 
 # Once Python binaries are installed install pip
   #sudo easy_install pip
-  curl -O https://bootstrap.pypa.io/get-pip.py # 1.5mb
-  python get-pip.py --user
-  pyenv rehash
-  python -m pip install --user virtualenv
+curl -O https://bootstrap.pypa.io/get-pip.py # 1.5mb
+python get-pip.py --user
+pyenv rehash
+python -m pip install --user virtualenv
 
