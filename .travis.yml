@@ -10,14 +10,8 @@ matrix:
 
 before_install: # thanks https://github.com/andyli
   # https://github.com/travis-ci/travis-ci/issues/3448#issuecomment-250075501
-  - |
-    #sw_vers
-    #brew update || brew update
-    brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python3
-    curl -O https://bootstrap.pypa.io/get-pip.py # 1.5mb
-    python get-pip.py --user
-    pyenv rehash
-    python -m pip install --user virtualenv
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./bin/osx_install_pip.sh; fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update && sudo apt-get -y install python-pip; fi
 
 install:
   - pip install --upgrade pip

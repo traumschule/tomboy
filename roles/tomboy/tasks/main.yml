@@ -26,7 +26,6 @@
   with_items: [ cache, lib ]
 
 - name: Install Lazarus deps
-  remote_user: "{{ ansible_user }}"
   include_tasks: lazarus_{{distribution}}.yml
   tags: [ deps, lazarus ]
 
@@ -56,11 +55,11 @@
   register: kcontrols
   tags: [ lib, kcontrols ]
 
-- name: Find KControls
+- name: Check for extracted KControls
   find: file_type=directory paths="{{dir}}/../lib" patterns='tkweb-kcontrols-*'
   register: kcontrols_dir
 
-- name: Link KControls
+- name: Create link to KControls
   file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/../lib/tkweb-kcontrols"
 
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
@@ -76,11 +75,7 @@
   tags: build
 - debug:
     var: build.stdout_lines
-  when: build.rc != 0
-  tags: build
-
-- fail: msg="Tomboy could not be built."
-  when: build.rc != 0
+  failed_when: build.rc != 0
   tags: build
 
 ...
