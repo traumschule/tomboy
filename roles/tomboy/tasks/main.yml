@@ -22,13 +22,23 @@
 
 # http://wiki.lazarus.freepascal.org/
 - name: Check for lazbuild
-  stat: path=/usr/bin/lazbuild
+  command: which lazbuild
+  #stat: path=/usr/bin/lazbuild
   register: lazbuild_bin
+  ignore_errors: yes
+- debug: var=lazbuild_bin.stdout
+
   # install from git http://wiki.lazarus.freepascal.org/git_mirrors
 - name: Install Lazarus
-  when: not lazbuild_bin.stat.exists
+  when: lazbuild_bin.stdout == ""
   include_tasks: lazarus_{{distribution}}.yml
   tags: [ deps, lazarus ]
+
+- name: Check for lazbuild
+  command: which lazbuild
+  #stat: path=/usr/bin/lazbuild
+  register: lazbuild_bin
+- debug: var=lazbuild_bin.stdout
 
 - name: Check for tomboy-ng source
   stat: path={{dir}}/src
@@ -65,35 +75,51 @@
 - name: Check for extracted KControls
   find: file_type=directory paths="{{dir}}/lib" patterns='tkweb-kcontrols-*'
   register: kcontrols_dir # may find an older source first if there are multiple versions
+- debug: var=kcontrols_dir.files
 
 - name: Create link to KControls
   file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/lib/tkweb-kcontrols"
 
-- debug: msg="{{ lookup('pipe', 'pwd') }}"
+- name: Show content of lib/tkweb-kcontrols
+  shell: "ls -lh '{{dir}}/lib/tkweb-kcontrols'"
+  register: kcontrols_files
+- debug: var=kcontrols_files.stdout_lines
+
+- name: Check kgrids.pas 
+  shell: "shasum '{{dir}}/lib/tkweb-kcontrols/source/kgrids.pas'"
+  register: shasum
+- debug: var=shasum.stdout
+# unpatched: 5f5abe9deaf06b30b0b72f22e0c4cc4d7c418870  tkweb-kcontrols/source/kgrids.pa
+# patched: 6d4cfd35734fb64e895be4d71f3de1034fa872fa  lib/tkweb-kcontrols/source/kgrids.pas
+
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest={{dir}}/lib/tkweb-kcontrols/source/kgrids.pas remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest={{dir}}/lib/tkweb-kcontrols/source/kgrids.pas remote_src=yes src={{dir}}/template/kgrids.patch #backup=yes
   ignore_errors: yes # fails on macos https://travis-ci.org/traumschule/tomboy/builds/306739762
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
+
+- name: Check kgrids.pas 
+  shell: "shasum '{{dir}}/lib/tkweb-kcontrols/source/kgrids.pas'"
+  register: shasum
+- debug: var=shasum.stdout
+
+- name: Show content of lib/tkweb-kcontrols
+  shell: "ls -lh '{{dir}}/src/tomboy-ng'"
+  register: tomboyng_files
+- debug: var=tomboyng_files.stdout_lines
 
 - name: Build Tomboy/Pascal
   command: chdir={{dir}}/src/tomboy-ng lazbuild --pcp=../../lazconf Tomboy_NG.lpi
   register: build
   ignore_errors: yes
   tags: build
-- debug: var=build.stdout_lines
-  tags: build
-- debug: var=build.rc
-  tags: build
-- debug: var=build.msg
-  tags: build
+
 - name: Check for tomboy-ng binary
   stat: path={{dir}}/src/tomboy-ng/tomboy-ng
   register: find_build
   tags: build
-  #failed_when: build.rc != 0 or '"MODULE FAILURE" in build.msg'
   failed_when: build.rc != 0 or build.msg is defined and build.msg.find("MODULE FAILURE")
 
-# cross-compile: http://wiki.freepascal.org/fpcupdeluxe
+# TODO cross-compile: http://wiki.freepascal.org/fpcupdeluxe
 ...

@@ -6,63 +6,7 @@
   homebrew: name=gtk+ state=present update_homebrew=yes
   tags: deps
 
-# Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
-- name: Download upstream Lazarus powerpc packages (~150mb)
-  when: ansible_architecture == 'x86_64'
-  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
-  with_items:
-   - { file: "lazarus-1.2.6-powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/lazarus-1.2.6-powerpc-macosx.dmg" }
-   - { file: "fpc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg" }
-   - { file: "fpcsrc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg" }
-  retries: 3
-
-- name: Install Lazarus (Mac powerpc)
-  when: ansible_architecture == 'x86_64'
-  shell: |
-    export mountpath=/Volumes/{{item.path}}
-    hdiutil mount -nobrowse cache/{{item.file}}
-    ls -l $mountpath
-    find $mountpath
-    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
-    hdiutil info
-    ls /Volumes
-    hdiutil unmount "$mountpath"
-  with_items:
-    - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg }
-    - { path: fpcsrc-2.6.4, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
-    - { path: lazarus-1.2.6, file: lazarus-1.2.6-powerpc-macosx.dmg }
-  register: hdiutil
-- debug: var=hdiutil.stdout_lines
-  # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
-  # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
-
-
-# Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
-- name: Download upstream Lazarus i386 packages (~150mb)
-  when: not ansible_architecture == 'x86_64'
-  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
-  with_items:
-   - { file: "fpc-src-3.0.2-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-src-3.0.2-macosx.dmg" }
-   - { file: "fpc-3.0.2.intel-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/fpc-3.0.2.intel-macosx.dmg" }
-   - { file: "lazarus-1.8.0-RC5-i686-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/lazarus-1.8.0-RC5-i686-macosx.dmg" }
-  retries: 3
-
-- name: Install Lazarus (Mac i386) # untested
-  when: not ansible_architecture == 'x86_64'
-  shell: | # example: http://blog.smalleycreative.com/administration/automating-osx-part-one/
-    export mountpath=/Volumes/{{item.path}}
-    hdiutil mount -nobrowse cache/{{item.file}}
-    ls -l $mountpath
-    find $mountpath
-    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
-    hdiutil info
-    ls /Volumes
-    hdiutil unmount "$mountpath"
-  with_items:
-    - { path: "fpc-src-3.0.2-macosx.dmg", file: fpc-2.6.4.powerpc-macosx.dmg }
-    - { path: "fpc-3.0.2.intel-macosx.dmg", file: fpcsrc-2.6.4.powerpc-macosx.dmg }
-    - { path: "lazarus-1.8.0-RC5-i686-macosx.dmg", file: lazarus-1.2.6-powerpc-macosx.dmg }
-  register: hdiutil
-- debug: var=hdiutil.stdout_lines
+- name: Install Lazarus
+  include_tasks: "lazarus_MacOSX_{{ansible_architecture}}.yml"
 
 ...

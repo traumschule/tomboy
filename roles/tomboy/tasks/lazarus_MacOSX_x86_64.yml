@@ -1,0 +1,28 @@
+---
+# Mac powerpc https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/
+- name: Download upstream Lazarus powerpc packages (~150mb)
+  uri: url={{item.url}} dest=cache/{{item.file}} creates=cache/{{item.file}} status_code=200,304
+  with_items:
+   - { file: "lazarus-1.2.6-powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/lazarus-1.2.6-powerpc-macosx.dmg" }
+   - { file: "fpc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpc-2.6.4.powerpc-macosx.dmg" }
+   - { file: "fpcsrc-2.6.4.powerpc-macosx.dmg", url: "https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20powerpc/Lazarus%201.2.6/fpcsrc-2.6.4.powerpc-macosx.dmg" }
+  retries: 3
+
+- name: Install Lazarus (Mac powerpc)
+  shell: |
+    export mountpath=/Volumes/{{item.path}}
+    hdiutil mount -nobrowse cache/{{item.file}}
+    ls -l $mountpath
+    find $mountpath
+    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
+    hdiutil info
+    ls /Volumes
+    hdiutil unmount "$mountpath"
+  with_items:
+    - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg }
+    - { path: fpcsrc-2.6.4, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
+    - { path: lazarus-1.2.6, file: lazarus-1.2.6-powerpc-macosx.dmg }
+  register: hdiutil
+- debug: var=hdiutil
+  # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
+  # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html

@@ -7,7 +7,7 @@ sw_vers
 brew update || brew update
 
 # Install python
-brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python3
+brew install --HEAD --without-readline --without-xz --without-gdbm --without-sqlite python
 
   # alternative python install methods
   # thanks ogrisel https://github.com/travis-ci/travis-ci/issues/2312#issuecomment-43328069
