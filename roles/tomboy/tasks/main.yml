@@ -1,6 +1,8 @@
 ---
 # Install and build tomboy-ng - http://www.bannons.id.au/tomboy
 
+- debug: var=dir
+  tags: debug
 - debug: var=ansible_user
   tags: debug
 - debug: var=ansible_architecture
@@ -14,31 +16,28 @@
 - set_fact:
     architecture: "{{ ansible_architecture if not ansible_architecture == 'x86_64' else 'amd64' }}"
 
-- name: Save current directory
-  set_fact: dir={{ansible_env.PWD}}/src
-  tags: debug, source,  build, lib, kcontrols
-- name: tomboy-ng directory
-  debug: var=dir
-  tags: debug
-
 - name: Create directories
   file: state=directory path={{item}}
   with_items: [ cache, lib ]
 
+# http://wiki.lazarus.freepascal.org/
 - name: Check for lazbuild
   stat: path=/usr/bin/lazbuild
   register: lazbuild_bin
+  # install from git http://wiki.lazarus.freepascal.org/git_mirrors
 - name: Install Lazarus
   when: not lazbuild_bin.stat.exists
   include_tasks: lazarus_{{distribution}}.yml
   tags: [ deps, lazarus ]
 
 - name: Check for tomboy-ng source
-  stat: path={{ dir }}
+  stat: path={{dir}}/src
   register: repo
+  tags: build
 - name: Clone tomboy-ng repository
   when: not repo.stat.exists
-  git: dest={{ dir }} repo=https://github.com/tomboy-notes/tomboy-ng  
+  git: dest={{dir}}/src repo=https://github.com/tomboy-notes/tomboy-ng  
+  tags: build
 
 - name: Create secondary Lazarus config dir ./lazconf
   file: state=directory path=lazconf
@@ -57,33 +56,38 @@
 - name: Extract KControls
   unarchive: 
     src: cache/KControls.zip
-    dest: "{{dir}}/../lib"
-    creates: "{{dir}}/../lib/tkweb-kcontrols-*"
+    dest: "{{dir}}/lib"
+    creates: "{{dir}}/lib/tkweb-kcontrols-*"
     remote_src: yes
   register: kcontrols
   tags: [ lib, kcontrols ]
 
 - name: Check for extracted KControls
-  find: file_type=directory paths="{{dir}}/../lib" patterns='tkweb-kcontrols-*'
-  register: kcontrols_dir
+  find: file_type=directory paths="{{dir}}/lib" patterns='tkweb-kcontrols-*'
+  register: kcontrols_dir # may find an older source first if there are multiple versions
 
 - name: Create link to KControls
-  file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/../lib/tkweb-kcontrols"
+  file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/lib/tkweb-kcontrols"
 
+- debug: msg="{{ lookup('pipe', 'pwd') }}"
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest="{{dir}}/../lib/tkweb-kcontrols/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest="{{dir}}/lib/tkweb-kcontrols/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
 
-- name: Build Tomboy/Pascal # cross-compiling http://wiki.freepascal.org/fpcupdeluxe
-  command: chdir={{dir}}/tomboy-ng lazbuild --pcp=../../lazconf Tomboy_NG.lpi
+- name: Build Tomboy/Pascal
+  command: chdir={{dir}}/src/tomboy-ng lazbuild --pcp=../../lazconf Tomboy_NG.lpi
   register: build
   ignore_errors: yes
   tags: build
-- debug:
-    var: build.stdout_lines
-  failed_when: build.rc != 0
+- debug: var=build.stdout_lines
   tags: build
 
+- name: Check for tomboy-ng binary
+  stat: path={{dir}}/src/tomboy-ng/tomboy-ng
+  register: find_build
+  tags: build
+  failed_when: "'MODULE FAILURE' in build.msg or build.rc != 0"
+# cross-compile: http://wiki.freepascal.org/fpcupdeluxe
 ...

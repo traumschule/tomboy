@@ -4,12 +4,12 @@
     <Item1>
       <Name Value="kcontrolsbase"/>
       <Version Major="1" Minor="7" Release="1"/>
-      <Filename Value="{{dir}}/../lib/tkweb-kcontrols/packages/kcontrols/kcontrolsbase.lpk"/>
+      <Filename Value="{{dir}}/lib/tkweb-kcontrols/packages/kcontrols/kcontrolsbase.lpk"/>
     </Item1>
     <Item2>
       <Name Value="KControlsLaz"/>
       <Version Major="1" Minor="7" Release="1"/>
-      <Filename Value="{{dir}}/../lib/tkweb-kcontrols/packages/kcontrols/kcontrolslaz.lpk"/>
+      <Filename Value="{{dir}}/lib/tkweb-kcontrols/packages/kcontrols/kcontrolslaz.lpk"/>
     </Item2>
   </UserPkgLinks>
 </CONFIG>

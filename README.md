@@ -58,3 +58,5 @@ In case you want to only run some parts:
 #### Try to build
 
 `ansible-playbook tomboy.yml --tags build`
+
+[More about Ansible](https://docs.ansible.com/ansible/latest/intro.html)
