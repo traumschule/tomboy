@@ -71,7 +71,8 @@
 
 - debug: msg="{{ lookup('pipe', 'pwd') }}"
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest="{{dir}}/lib/tkweb-kcontrols/source/kgrids.pas" remote_src=yes src=template/kgrids.patch backup=yes
+  patch: dest={{dir}}/lib/tkweb-kcontrols/source/kgrids.pas remote_src=yes src=template/kgrids.patch backup=yes
+  ignore_errors: yes # fails on macos https://travis-ci.org/traumschule/tomboy/builds/306739762
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
@@ -83,11 +84,16 @@
   tags: build
 - debug: var=build.stdout_lines
   tags: build
-
+- debug: var=build.rc
+  tags: build
+- debug: var=build.msg
+  tags: build
 - name: Check for tomboy-ng binary
   stat: path={{dir}}/src/tomboy-ng/tomboy-ng
   register: find_build
   tags: build
-  failed_when: "'MODULE FAILURE' in build.msg or build.rc != 0"
+  #failed_when: build.rc != 0 or '"MODULE FAILURE" in build.msg'
+  failed_when: build.rc != 0 or build.msg is defined and build.msg.find("MODULE FAILURE")
+
 # cross-compile: http://wiki.freepascal.org/fpcupdeluxe
 ...

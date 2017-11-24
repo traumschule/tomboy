@@ -9,7 +9,7 @@
     - name: Check for tomboy-ng binary
       stat: path=src/tomboy-ng/tomboy-ng
       register: find_build
-      tags: build
+      #tags: build
 
   roles:
    - { role: tomboy, when: find_build is not defined or not find_build.stat.exists }
