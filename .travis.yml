@@ -10,7 +10,7 @@ matrix:
 
 before_install: # thanks https://github.com/andyli
   # https://github.com/travis-ci/travis-ci/issues/3448#issuecomment-250075501
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./bin/osx_install_pip.sh; fi
+  #- if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./bin/osx_install_pip.sh; fi # install python3
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update && sudo apt-get -y install python-pip; fi
 
 install:

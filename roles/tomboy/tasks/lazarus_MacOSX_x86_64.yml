@@ -12,17 +12,14 @@
   shell: |
     export mountpath=/Volumes/{{item.path}}
     hdiutil mount -nobrowse cache/{{item.file}}
-    #ls -l $mountpath
-    #find $mountpath
-    installer -pkg "$mountpath/*.pkg" -target "/Volumes/Macintosh HD"
-    #hdiutil info
-    #ls /Volumes
+    #hdiutil info && ls /Volumes && ls -l $mountpath && find $mountpath # uncomment for a lot of debug output
+    installer -pkg "$mountpath/{{item.pkg}}" -target "/Volumes/Macintosh HD"
     hdiutil unmount "$mountpath"
   with_items:
-    - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg } #, pkg: fpc-2.6.4.powerpc-macosx.pkg, xcode-2.4.0.pkg
-    - { path: fpcsrc-2.6.4, file: fpcsrc-2.6.4.powerpc-macosx.dmg } #, pkg: fpcsrc-2.6.4-20140423.pkg
-    - { path: lazarus-1.2.6, file: lazarus-1.2.6-powerpc-macosx.dmg } #, pkg: lazarus.pkg
+    - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg, pkg: fpc-2.6.4.powerpc-macosx.pkg } #, xcode-2.4.0.pkg
+    - { path: fpcsrc-2.6.4, file: fpcsrc-2.6.4.powerpc-macosx.dmg, pkg: fpcsrc-2.6.4-20140423.pkg }
+    - { path: lazarus-1.2.6, file: lazarus-1.2.6-powerpc-macosx.dmg, pkg: lazarus.pkg }
   register: hdiutil
-- debug: var=hdiutil
+- debug: var=hdiutil # uncomment for a lot of debug output
   # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
   # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
