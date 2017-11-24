@@ -12,11 +12,11 @@
   shell: | # example: http://blog.smalleycreative.com/administration/automating-osx-part-one/
     export mountpath=/Volumes/{{item.path}}
     hdiutil mount -nobrowse cache/{{item.file}}
-    ls -l $mountpath
-    find $mountpath
-    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
-    hdiutil info
-    ls /Volumes
+    #ls -l $mountpath
+    #find $mountpath
+    installer -pkg "$mountpath/*.pkg" -target "/Volumes/Macintosh HD"
+    #hdiutil info
+    #ls /Volumes
     hdiutil unmount "$mountpath"
   with_items:
     - { path: "fpc-src-3.0.2-macosx.dmg", file: fpc-2.6.4.powerpc-macosx.dmg }
