@@ -13,12 +13,12 @@
     export mountpath=/Volumes/{{item.path}}
     hdiutil mount -nobrowse cache/{{item.file}}
     hdiutil info && ls /Volumes && ls -l $mountpath && find $mountpath # uncomment for a lot of debug output
-    sudo installer -pkg "$mountpath/{{item.pkg}}" -target "/Volumes/Macintosh HD"
+    sudo installer -pkg "$mountpath/{{item.pkg}}" #-target "/Volumes/Macintosh HD"
     hdiutil unmount "$mountpath"
   with_items:
     - { path: fpc-3.0.2.intel-macosx, file: fpc-3.0.2.intel-macosx.dmg, pkg: fpc-3.0.2.intel-macosx.pkg }
     - { path: fpcsrc-3.0.2, file: fpc-src-3.0.2-macosx.dmg, pkg: fpcsrc-3.0.2.pkg }
-    - { path: lazarus-1.8.0, file: lazarus-1.8.0-RC5-i686-macosx.dmg, pkg: lazarus.pkg }
+    - { path: lazarus-1.8.05, file: lazarus-1.8.0-RC5-i686-macosx.dmg, pkg: lazarus.pkg }
   register: hdiutil
 - debug: var=hdiutil # uncomment for a lot of debug output
   # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
