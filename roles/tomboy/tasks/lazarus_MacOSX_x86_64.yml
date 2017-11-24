@@ -13,7 +13,7 @@
     export mountpath=/Volumes/{{item.path}}
     hdiutil mount -nobrowse cache/{{item.file}}
     #hdiutil info && ls /Volumes && ls -l $mountpath && find $mountpath # uncomment for a lot of debug output
-    installer -pkg "$mountpath/{{item.pkg}}" -target "/Volumes/Macintosh HD"
+    sudo installer -pkg "$mountpath/{{item.pkg}}" -target "/Volumes/Macintosh HD"
     hdiutil unmount "$mountpath"
   with_items:
     - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg, pkg: fpc-2.6.4.powerpc-macosx.pkg } #, xcode-2.4.0.pkg
