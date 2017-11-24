@@ -18,20 +18,21 @@
 
 - name: Install Lazarus (Mac powerpc)
   when: ansible_architecture == 'x86_64'
-  shell: | # example: http://blog.smalleycreative.com/administration/automating-osx-part-one/
+  shell: |
     export mountpath=/Volumes/{{item.path}}
-    # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
-    hdiutil mount -nobrowse {{item.file}}
+    hdiutil mount -nobrowse cache/{{item.file}}
     hdiutil info
     ls /Volumes
     installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
-    hdiutil unmount "$mountpath"
+    #hdiutil unmount "$mountpath"
   with_items:
-    - { path: pfc, file: fpc-2.6.4.powerpc-macosx.dmg }
+    - { path: fpc, file: fpc-2.6.4.powerpc-macosx.dmg }
     - { path: fpcsrc, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
     - { path: lazarus, file: lazarus-1.2.6-powerpc-macosx.dmg }
   register: hdiutil
 - debug: var=hdiutil.stdout_lines
+  # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
+  # hdiutil manual https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html
 
 
 # Mac i386 https://sourceforge.net/projects/lazarus/files/Lazarus%20Mac%20OS%20X%20i386/Lazarus%201.8.0RC5/
