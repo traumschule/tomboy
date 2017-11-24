@@ -21,14 +21,16 @@
   shell: |
     export mountpath=/Volumes/{{item.path}}
     hdiutil mount -nobrowse cache/{{item.file}}
+    ls -l $mountpath
+    find $mountpath
+    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
     hdiutil info
     ls /Volumes
-    installer -pkg "$mountpath/*.mpkg" -target "/Volumes/Macintosh HD"
-    #hdiutil unmount "$mountpath"
+    hdiutil unmount "$mountpath"
   with_items:
-    - { path: fpc, file: fpc-2.6.4.powerpc-macosx.dmg }
-    - { path: fpcsrc, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
-    - { path: lazarus, file: lazarus-1.2.6-powerpc-macosx.dmg }
+    - { path: fpc-2.6.4.powerpc-macosx, file: fpc-2.6.4.powerpc-macosx.dmg }
+    - { path: fpcsrc-2.6.4, file: fpcsrc-2.6.4.powerpc-macosx.dmg }
+    - { path: lazarus-1.2.6, file: lazarus-1.2.6-powerpc-macosx.dmg }
   register: hdiutil
 - debug: var=hdiutil.stdout_lines
   # mounting and installing on osx http://blog.smalleycreative.com/administration/automating-osx-part-one/
