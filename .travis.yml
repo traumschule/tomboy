@@ -1,6 +1,7 @@
 ---
 # syntax check: https://lint.travis-ci.org/
 language: c
+cache: { pip, directories: cache }
 os: osx # https://docs.travis-ci.com/user/reference/osx
 matrix:
   include:
