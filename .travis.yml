@@ -1,12 +1,15 @@
 ---
 # syntax check: https://lint.travis-ci.org/
 language: c
-cache: { pip, directories: cache }
-os: osx # https://docs.travis-ci.com/user/reference/osx
-osx_image: xcode9.1
-matrix:
-  include:
-    - os: osx # https://travis-ci.org/MacPython
+#cache: { pip, directories: cache }
+os:
+ - osx # https://docs.travis-ci.com/user/reference/osx
+ - linux
+sudo: required
+#osx_image: xcode9.1
+#matrix:
+#  include:
+#    - os: osx # https://travis-ci.org/MacPython
       # thanks https://github.com/WhyNotHugo
       # https://github.com/travis-ci/travis-ci/issues/2312#issuecomment-289140791
 
@@ -16,8 +19,8 @@ before_install: # thanks https://github.com/andyli
   - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update && sudo apt-get -y install python-pip; fi
 
 install:
-  - pip install --upgrade pip
-  - pip install ansible
+  - sudo pip install --upgrade pip
+  - sudo pip install ansible
 
 before_script:
   - export ansible_command='ansible-playbook tomboy.yml'

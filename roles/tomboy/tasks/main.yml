@@ -72,6 +72,11 @@
   register: kcontrols
   tags: [ lib, kcontrols ]
 
+- name: Check for extracted KControls
+  find: file_type=directory paths="{{dir}}/lib" patterns='tkweb-kcontrols-*'
+  register: kcontrols_dir # may find an older source first if there are multiple versions
+- debug: var=kcontrols_dir.files
+
 - name: Create link to KControls
   file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/lib/tkweb-kcontrols"
 
