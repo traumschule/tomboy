@@ -3,10 +3,13 @@
 
 - hosts: localhost
   pre_tasks:
-    - name: Check for Tomboy_NG binary
-      stat: path=src/tomboy-ng/Tomboy_NG
+    - name: Save current directory
+      set_fact: dir={{ansible_env.PWD}}
+      tags: debug, source,  build, lib, kcontrols
+    - name: Check for tomboy-ng binary
+      stat: path=src/tomboy-ng/tomboy-ng
       register: find_build
-      tags: build
+      #tags: build
 
   roles:
    - { role: tomboy, when: find_build is not defined or not find_build.stat.exists }
