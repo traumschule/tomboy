@@ -72,16 +72,11 @@
   register: kcontrols
   tags: [ lib, kcontrols ]
 
-- name: Check for extracted KControls
-  find: file_type=directory paths="{{dir}}/lib" patterns='tkweb-kcontrols-*'
-  register: kcontrols_dir # may find an older source first if there are multiple versions
-- debug: var=kcontrols_dir.files
-
 - name: Create link to KControls
   file: state=link src="{{ kcontrols_dir.files[0]['path'] }}" dest="{{dir}}/lib/tkweb-kcontrols"
 
 - name: Show content of lib/tkweb-kcontrols
-  shell: "ls -lh '{{dir}}/lib/tkweb-kcontrols'"
+  shell: "ls -lh '{{dir}}/lib'"
   register: kcontrols_files
 - debug: var=kcontrols_files.stdout_lines
 
@@ -93,21 +88,17 @@
 # patched: 6d4cfd35734fb64e895be4d71f3de1034fa872fa  lib/tkweb-kcontrols/source/kgrids.pas
 
 - name: Patch kgrids.pas # http://www.tkweb.eu/en/delphicomp/kcontrols.html
-  patch: dest={{dir}}/lib/tkweb-kcontrols/source/kgrids.pas remote_src=yes src={{dir}}/template/kgrids.patch #backup=yes
-  ignore_errors: yes # fails on macos https://travis-ci.org/traumschule/tomboy/builds/306739762
   # To avoid:
   #   Error: (3058) There is no method in an ancestor class to be overridden:
   #    "DoAutoAdjustLayout(const TLayoutAdjustmentPolicy;const Double;const Double;const Boolean);"
+  patch: dest={{dir}}/lib/tkweb-kcontrols/source/kgrids.pas remote_src=yes src={{dir}}/template/kgrids.patch backup=yes
+  ignore_errors: yes # failed on macos https://travis-ci.org/traumschule/tomboy/builds/306946050
+
 
 - name: Check kgrids.pas 
   shell: "shasum '{{dir}}/lib/tkweb-kcontrols/source/kgrids.pas'"
   register: shasum
 - debug: var=shasum.stdout
-
-- name: Show content of lib/tkweb-kcontrols
-  shell: "ls -lh '{{dir}}/src/tomboy-ng'"
-  register: tomboyng_files
-- debug: var=tomboyng_files.stdout_lines
 
 - name: Build Tomboy/Pascal
   command: chdir={{dir}}/src/tomboy-ng lazbuild --pcp=../../lazconf Tomboy_NG.lpi
